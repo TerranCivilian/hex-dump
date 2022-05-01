@@ -1,6 +1,5 @@
 #[macro_use] extern crate rocket;
 
-use std::fmt::Write;
 use rocket::data::{Data, ToByteUnit};
 
 #[get("/")]
@@ -17,15 +16,12 @@ async fn hex(file: Data<'_>) -> std::io::Result<String> {
     Ok(write_hexdump(&bytes))
 }
 
-fn write_hexdump(bytes: &Vec<u8>) -> String {
-    let mut hexdump = String::new();
-    for (i, c) in bytes.iter().enumerate() {
-        if i % 16 == 0 {
-            write!(hexdump, "\n{:#08x}: ", i).unwrap();
-        }
-        write!(hexdump, "{:02x} ", c).unwrap();
-    }
-    hexdump
+fn write_hexdump(bytes: &[u8]) -> String {
+    bytes.iter().enumerate().fold("".to_string(), |acc, (i, &byte)| {
+        let mut line = if i % 16 == 0 { format!("\n{:#08x}: ", i) } else { "".to_string() };
+        line += &format!("{:02x} ", byte);
+        acc + &line
+    })
 }
 
 #[launch]
